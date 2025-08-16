@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESP32 Chat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      #chat {
+        height: 70vh;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+      #input-area {
+        display: flex;
+        padding: 10px;
+        gap: 10px;
+        background: #f9f9f9;
+      }
+      #input-area input {
+        flex: 1;
+        padding: 8px;
+        font-size: 14px;
+      }
+      #input-area button {
+        padding: 8px 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>ESP32 Chat</h2>
+    <div id="chat" aria-live="polite"></div>
+    <div id="input-area">
+      <label for="msg" class="visually-hidden">Message</label>
+      <input
+        id="msg"
+        name="msg"
+        type="text"
+        placeholder="Type your message..."
+        aria-label="Type your message"
+      />
+      <button id="send">Send</button>
+    </div>
+
+    <script>
+      const chat = document.getElementById("chat");
+      const msgInput = document.getElementById("msg");
+      const sendBtn = document.getElementById("send");
+
+      function appendMessage(sender, text) {
+        const p = document.createElement("p");
+        p.textContent = `${sender}: ${text}`;
+        chat.appendChild(p);
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      sendBtn.addEventListener("click", () => {
+        const text = msgInput.value.trim();
+        if (!text) return;
+        appendMessage("You", text);
+        msgInput.value = "";
+
+        fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        }).then((res) => {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+
+          let pendingText = "";
+          let flushTimer = null;
+
+          function flush() {
+            if (pendingText) {
+              appendMessage("AI", pendingText);
+              pendingText = "";
+            }
+            flushTimer = null;
+          }
+
+          function read() {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                flush();
+                return;
+              }
+
+              pendingText += decoder.decode(value, { stream: true });
+
+              // Start or reset flush timer
+              if (!flushTimer) {
+                flushTimer = setTimeout(flush, 150); // flush every 50ms
+              }
+
+              read();
+            });
+          }
+
+          read();
+        });
+      });
+    </script>
+  </body>
+</html>

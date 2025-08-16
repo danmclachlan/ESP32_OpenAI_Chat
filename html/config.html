@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Configuration</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    form { max-width: 300px; margin: auto; display: flex; flex-direction: column; gap: 15px; }
+    label { font-weight: bold; }
+    input { padding: 8px; font-size: 14px; }
+    button { padding: 10px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>ESP32 WiFi & API Setup</h2>
+  <form method="POST" action="/config">
+    <label for="ssid">WiFi SSID</label>
+    <input type="text" id="ssid" name="ssid" placeholder="WiFi SSID" aria-label="WiFi SSID" required>
+
+    <label for="pass">WiFi Password</label>
+    <input type="password" id="pass" name="pass" placeholder="WiFi Password" aria-label="WiFi Password" required>
+
+    <label for="apikey">OpenAI API Key</label>
+    <input type="text" id="apikey" name="apikey" placeholder="OpenAI API Key" aria-label="OpenAI API Key" required>
+
+    <button type="submit">Save & Reboot</button>
+  </form>
+</body>
+</html>
+
